@@ -20,8 +20,6 @@ class StateMachine(stateGraph: Graph[StateData]) {
   // field for the starting state of the state machine
   private var startState : Option[Node[StateData]] = None
 
-  // TODO : Modify initCSV so that it raises an IOException if the edgesCSV
-  //  tries to use a state that was not listed in the nodeCSV
   /**
    * Initializes a StateMachine from CSV files.
    * @param nodeCSV - the filename of the CSV containing node information
@@ -50,6 +48,8 @@ class StateMachine(stateGraph: Graph[StateData]) {
       case e: IOException => println("error reading " + nodeCSV)
     }
 
+    if (this.startState.isEmpty) throw new IOException("start state was not listed in the nodeCSV")
+
     // Parse edgeCSV
     try {
       val parser: CSVParser = new CSVParser(new FileReader(new File(edgesCSV)), format)
@@ -63,13 +63,37 @@ class StateMachine(stateGraph: Graph[StateData]) {
     }
   }
 
-  def checkAlways(checkNode: (StateData => Boolean)): Option[Node[StateData]] = {
-    // TODO : Implement!
+  def setStart(startNode: Node[StateData]): Unit = {
+    startState = Some(startNode)
+  }
+
+  private def checkCond(checkNode: StateData => Boolean, failCond: Boolean,
+                        checkedStates: Set[Option[Node[StateData]]]): Option[Node[StateData]] = {
+
+    if (checkedStates.contains(startState)) return None
+    val newChecked = checkedStates + startState
+
+    if (startState.isEmpty) return None //TODO check if this line is necessary. It's possible that we can just delete this line
+    if (checkNode(startState.get.getContents()) == failCond) return startState
+    val currState: Node[StateData] = startState.get
+
+    for (node <- startState.get.getNexts()) {
+      //TODO in testing, we might find that we want to reset currState here, or maybe remove this reset entirely!
+      setStart(node)
+      val nodeCheck = checkCond(checkNode, failCond, newChecked)
+      if (nodeCheck.isDefined) return nodeCheck
+    }
+
+    setStart(currState)
+
     None
   }
 
+  def checkAlways(checkNode: StateData => Boolean): Option[Node[StateData]] = {
+    checkCond(checkNode, false, Set())
+  }
+
   def checkNever(checkNode: StateData => Boolean): Option[Node[StateData]] = {
-    // TODO : Implement!
-    None
+    checkCond(checkNode, true, Set())
   }
 }

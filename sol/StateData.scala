@@ -12,7 +12,6 @@ class StateData(val labels: List[String]) {
    * @return a boolean that is true if the state contains lb, and false otherwise
    */
   def hasLabel(lb: String) : Boolean = {
-    // TODO : Implement!
-    false
+    labels contains lb
   }
 }
