@@ -41,7 +41,7 @@ class AdjacencyListGraph[T] extends Graph[T] {
   @Override
   override def show(): Unit = {
     for (node <- allNodes) {
-      var toPrint = node.getContents().toString + " links to "
+      var toPrint = node.getContents().toString + " gets to "
       if (node.getNexts().isEmpty) println(toPrint + "nothing.")
       else {
         for (to <- node.getNexts()) {

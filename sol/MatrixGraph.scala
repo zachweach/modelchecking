@@ -38,10 +38,8 @@ class MatrixGraph[T](val maxSize: Int) extends Graph[T] {
     }
 
     @Override
-    override def addEdge(toNode: Node[T]): Unit = {
-      val to = toNode.asInstanceOf[MNode]
-      graph(index)(to.index) = true
-    }
+    override def addEdge(toNode: Node[T]): Unit =
+      graph(index)(toNode.asInstanceOf[MNode].index) = true
   }
 
   private def nextID(): Int = {
@@ -63,7 +61,7 @@ class MatrixGraph[T](val maxSize: Int) extends Graph[T] {
   @Override
   override def show(): Unit = {
     for ((id, node) <- nodes) {
-      var toPrint = node.getContents().toString + " links to "
+      var toPrint = node.getContents().toString + " gets to "
       if (node.getNexts().isEmpty) println(toPrint + "nothing.")
       else {
         for (to <- node.getNexts()) {
